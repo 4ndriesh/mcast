@@ -8,7 +8,7 @@ import asyncio
 
 if __name__ == "__main__":
 
-    # srv=Endpoint()
+    # srv=Serve()
 
     loop = asyncio.get_event_loop()
 

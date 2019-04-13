@@ -25,7 +25,7 @@ class Datagram2():
     def set_TS(self, **kwargs):
 
         bitarray = np.unpackbits(self.ts_array, axis=None)
-        bitarray[kwargs['ts_number']] = kwargs['ts_val']
+        bitarray[kwargs['ts_number']-1000] = kwargs['ts_val']
         self.ts_array = np.packbits(bitarray, axis=None)
         print(self.ts_array)
         return
