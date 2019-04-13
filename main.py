@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 __author__ = 'BiziurAA'
 # from server_udp import main
-from server_endpoint import *
+from server_udp import *
 from client import client1
 import curio
 import asyncio
