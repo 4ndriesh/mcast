@@ -35,14 +35,14 @@ class Endpoint:
     def __init__(self, queue_size=None):
 
         self.MCAST_GRP, self.MCAST_PORT, self.MCAST_HOST, _ = setting.version
-        ADDRESS = (self.MCAST_HOST, self.MCAST_PORT)
+        self.ADDRESS = (self.MCAST_HOST, self.MCAST_PORT)
 
         ttl = struct.pack('@i', 1)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
 
-        self.sock.bind(ADDRESS)
+        self.sock.bind(self.ADDRESS)
         mreq = struct.pack("4sl", socket.inet_aton(self.MCAST_GRP), socket.INADDR_ANY)
 
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
@@ -59,7 +59,7 @@ class Endpoint:
         except asyncio.QueueFull:
             print('asyncio.QueueFull')
 
-    def send(self, data, addr):
+    async def send(self, data, addr):
         self._transport.sendto(data, addr)
         return data, addr
 
@@ -104,7 +104,7 @@ async def recv(local,loop):
 async def send(remote):
     while True:
         # print(packed_TDatagram2)
-        remote.send(Dgram2.packed_TDatagram2, ('224.168.123.4', 12347))
+        await remote.send(Dgram2.packed_TDatagram2, ('224.168.123.4', 12347))
         await asyncio.sleep(1)
 
 

@@ -2,17 +2,17 @@
 __author__ = 'BiziurAA'
 # from server_udp import main
 from server_udp import *
-from client import client1
-import curio
+# from client import client1
+# import curio
 import asyncio
 
 if __name__ == "__main__":
 
     # srv=Serve()
 
-    loop = asyncio.get_event_loop()
-
-    loop.run_until_complete(main(loop))
+    # loop = asyncio.get_event_loop()
+    main()
+    # loop.run_until_complete(main(loop))
 
 
 
