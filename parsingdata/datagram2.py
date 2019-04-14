@@ -22,12 +22,26 @@ class Datagram2():
         print(self.ts_array)
         return
 
-    def set_TS(self, **kwargs):
+    def set_bit(self,value, bit):
+        return value | (1 << bit)
 
-        bitarray = np.unpackbits(self.ts_array, axis=None)
-        bitarray[kwargs['ts_number']-1000] = kwargs['ts_val']
-        self.ts_array = np.packbits(bitarray, axis=None)
-        print(self.ts_array)
+    def clear_bit(self,value, bit):
+        return value & ~(1 << bit)
+
+
+    def set_TS(self, **kwargs):
+        ts,nbit=divmod((kwargs['ts_number'] - 1000),8)
+        ts=ts+1
+        ts_number=self.ts_array[ts]
+        if kwargs['ts_val']:
+            self.ts_array[ts]=self.set_bit(ts_number,nbit)
+        else:
+            self.ts_array[ts] = self.clear_bit(ts_number, nbit)
+
+        # bitarray = np.unpackbits(self.ts_array, axis=None)
+        # bitarray[((x+1)*8)+(7-y)] = kwargs['ts_val']
+        # self.ts_array = np.packbits(bitarray, axis=None)
+        # print(self.ts_array)
         return
 
     def data_OFFSET(self, **kwargs):
