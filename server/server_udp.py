@@ -6,13 +6,15 @@ from config import Config
 from structpu import *
 from datagram2 import Datagram2
 import json
+
 # from exception_decor import exception
 #
 # from exception_logger import logger
 
 
 setting = Config.inst()
-__all__ = ['main','Endpoint']
+__all__ = ['main', 'Endpoint']
+
 
 class DatagramEndpointProtocol(asyncio.DatagramProtocol):
 
@@ -32,6 +34,7 @@ class DatagramEndpointProtocol(asyncio.DatagramProtocol):
 
     def error_received(self, exc):
         print('Error received:', exc)
+
 
 class Endpoint:
     def __init__(self, queue_size=None):
@@ -55,7 +58,6 @@ class Endpoint:
 
         self._transport = None
 
-
     def add_datagram(self, data, addr):
         try:
             self._queue.put_nowait((data, addr))
@@ -77,7 +79,9 @@ class Endpoint:
 
 # @exception(logger)
 task_channel_name = []
-async def recv_json(local,loop,Dgram2,path):
+
+
+async def recv_json(local, loop, Dgram2, path):
     with open(path, encoding='cp1251') as f:
         json_tu = json.load(f)
 
@@ -87,59 +91,44 @@ async def recv_json(local,loop,Dgram2,path):
             if not channel_name in task_channel_name:
                 print(Dgram2.ts_array)
                 task_channel_name.append(channel_name)
-                loop.create_task(send(local,channel_name,Dgram2))
+                loop.create_task(send(local, channel_name, Dgram2))
 
         local.send(Dgram2.packed_TDatagram2[channel_name])
 
-async def recv(local,loop,Dgram2):
 
+async def recv(local, loop, Dgram2):
     while True:
         data, address = await local.receive()
         # print('recived   {}'.format(data))
 
-        channel_name=Dgram2.parsing_data(data,js=False)
+        channel_name = Dgram2.parsing_data(data, js=False)
 
         if channel_name:
             local.send(Dgram2.packed_TDatagram2[channel_name])
             if not channel_name in task_channel_name:
                 print(Dgram2.ts_array)
                 task_channel_name.append(channel_name)
-                loop.create_task(send(local,channel_name,Dgram2))
+                loop.create_task(send(local, channel_name, Dgram2))
 
         # await asyncio.sleep(0.01)
+
+
 # @exception(logger)
-async def send(local,channel_name,Dgram2):
+async def send(local, channel_name, Dgram2):
     while True:
         local.send(Dgram2.packed_TDatagram2[channel_name])
         await asyncio.sleep(1)
 
-def main(Dgram2,path):
 
+def main(Dgram2, path):
     endpoint = Endpoint()
     loop = asyncio.get_event_loop()
-    connect = loop.create_datagram_endpoint(lambda: DatagramEndpointProtocol(endpoint,loop), sock=endpoint.sock)
+    connect = loop.create_datagram_endpoint(lambda: DatagramEndpointProtocol(endpoint, loop), sock=endpoint.sock)
     transport, protocol = loop.run_until_complete(connect)
     task = []
-    loop.create_task(recv(endpoint, loop,Dgram2))
-    loop.create_task(recv_json(endpoint, loop, Dgram2,path))
+    loop.create_task(recv(endpoint, loop, Dgram2))
+    loop.create_task(recv_json(endpoint, loop, Dgram2, path))
     loop.run_forever()
 
     transport.close()
     loop.close()
-
-
-
-    # local = await open_datagram_endpoint()
-    # print(local.address)
-    # remote = await open_remote_endpoint(*local.address)
-
-    # t.append(loop.create_task(send(remote,[b'asdasd\x00\x00\x00\x00\x00\x00'])))
-    # name_channel.append(b'asdasd\x00\x00\x00\x00\x00\x00')
-    # await asyncio.gather(*task)
-
-
-
-
-
-
-
