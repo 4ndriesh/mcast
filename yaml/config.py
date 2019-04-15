@@ -24,7 +24,7 @@ class Config:
         try:
 
             with open(self.filename_config, 'r', encoding='utf-8') as yaml_config_file:
-                self.config = yaml.load(yaml_config_file)
+                self.config = yaml.unsafe_load(yaml_config_file)
                 print(self.config)
         except Exception as e:
             print(e)

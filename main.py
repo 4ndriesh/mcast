@@ -2,17 +2,20 @@
 __author__ = 'BiziurAA'
 # from server_udp import main
 from server_udp import *
-# from client import client1
-# import curio
-import asyncio
+import sys
+
+from datagram2 import Datagram2
 
 if __name__ == "__main__":
 
-    # srv=Serve()
+    Dgram2 = Datagram2()
+    path=''
+    if len(sys.argv)>1 and sys.argv[1]:
+        path = sys.argv[1]
 
-    # loop = asyncio.get_event_loop()
-    main()
-    # loop.run_until_complete(main(loop))
+
+    main(Dgram2,path)
+
 
 
 

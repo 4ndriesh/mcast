@@ -5,7 +5,7 @@ import socket
 from config import Config
 from structpu import *
 from datagram2 import Datagram2
-
+import json
 # from exception_decor import exception
 #
 # from exception_logger import logger
@@ -41,8 +41,8 @@ class Endpoint:
 
         ttl = struct.pack('@i', 1)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        # self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        # self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
 
         self.sock.bind(self.ADDRESS)
         mreq = struct.pack("4sl", socket.inet_aton(self.MCAST_GRP), socket.INADDR_ANY)
@@ -73,38 +73,57 @@ class Endpoint:
         return data, addr
 
 
-Dgram2=Datagram2()
+# Dgram2=Datagram2()
 
 # @exception(logger)
-async def recv(local,loop):
-    task_channel_name = []
+task_channel_name = []
+async def recv_json(local,loop,Dgram2,path):
+    with open(path, encoding='cp1251') as f:
+        json_tu = json.load(f)
+
+    for channel_name in Dgram2.parsing_js(json_tu, js=True):
+        if channel_name:
+            local.send(Dgram2.packed_TDatagram2[channel_name])
+            if not channel_name in task_channel_name:
+                print(Dgram2.ts_array)
+                task_channel_name.append(channel_name)
+                loop.create_task(send(local,channel_name,Dgram2))
+
+        local.send(Dgram2.packed_TDatagram2[channel_name])
+
+async def recv(local,loop,Dgram2):
+
     while True:
         data, address = await local.receive()
-        print('recived   {}'.format(data))
+        # print('recived   {}'.format(data))
 
-        channel_name=Dgram2.parsing_data(data)
+        channel_name=Dgram2.parsing_data(data,js=False)
 
         if channel_name:
             local.send(Dgram2.packed_TDatagram2[channel_name])
             if not channel_name in task_channel_name:
+                print(Dgram2.ts_array)
                 task_channel_name.append(channel_name)
-                loop.create_task(send(local,channel_name))
+                loop.create_task(send(local,channel_name,Dgram2))
 
         # await asyncio.sleep(0.01)
 # @exception(logger)
-async def send(local,channel_name):
+async def send(local,channel_name,Dgram2):
     while True:
         local.send(Dgram2.packed_TDatagram2[channel_name])
         await asyncio.sleep(1)
 
-def main():
+def main(Dgram2,path):
+
     endpoint = Endpoint()
     loop = asyncio.get_event_loop()
     connect = loop.create_datagram_endpoint(lambda: DatagramEndpointProtocol(endpoint,loop), sock=endpoint.sock)
     transport, protocol = loop.run_until_complete(connect)
     task = []
-    loop.create_task(recv(endpoint, loop))
+    loop.create_task(recv(endpoint, loop,Dgram2))
+    loop.create_task(recv_json(endpoint, loop, Dgram2,path))
     loop.run_forever()
+
     transport.close()
     loop.close()
 
